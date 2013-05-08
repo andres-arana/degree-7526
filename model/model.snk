@@ -109,9 +109,9 @@ BAR_OUT	ADVANCE	180, 120		; tardan en reunirse todos en grupete
 
 
 <\F>
-Nombre=
-Descripcion=
-Version=
-Autor=
-Empresa=
+Nombre=Grupo2
+Descripcion=Trabajo Practico - Buses de excursionistas
+Version=1.0
+Autor=Andres Arana, Sergio Piano
+Empresa=FIUBA
 Opciones=
