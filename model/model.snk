@@ -1,0 +1,117 @@
+[Subsistema nuevo]
+*Definición de funciones
+
+tipo		FUNCTION	RN2, D4
+	0.2, 1 / 0.5, 2 / 0.9, 3 / 1, 4
+
+bar		FUNCTION	P$tipo, D4
+	1, 0.5 / 2, 0.1 / 3, 0.75 / 4, 0.45
+
+tMuseo	FUNCTION	P$tipo, D4
+	1, 3600 / 2, 5400 / 3, 1800 / 4, 2400
+
+tBar		FUNCTION	P$tipo, D4
+	1, 900 / 2, 600 / 3, 1500 / 4, 1200
+
+*emulo la cantidad equiprobable entre 6 a 10
+exc1		VARIABLE	6+RN3@5
+
+*emulo la cantidad equiprobable entre 20 a 40
+exc2		VARIABLE	20+RN4@21
+
+*estacionamiento para 5 buses pequeños
+estac		STORAGE	5
+
+*alojamiento del museo
+museo		STORAGE	10000000
+
+* cajashabilitadas
+INITIAL	X1, 2
+
+* caja elegida al azar
+cAzar		VARIABLE	1+RN5@(X1+1)
+
+* cantidad de pasajeros mas el bus
+excbus	VARIABLE	P$exc+1
+
+* armo subsistema de cajas habilitadas
+		GENERATE	,,, 7200
+		SAVEVALUE	X1, 3
+		ADVANCE	3600
+		SAVEVALUE	X1, 5
+		TERMINATE
+
+*Llegan pequeños buses de excursión
+		GENERATE	900, 600, , 25
+		ASSIGN	ocupa, 1		; un bus pequeño ocupa 1 lugar
+		ASSIGN	exc, V$exc1
+		TRANSFER	, ESTAC
+
+*Llegan buses de excursión
+		GENERATE	600, 300, 7200, 35
+		ASSIGN	ocupa, 2		; un bus grande ocupa 2 lugares
+		ASSIGN	exc, V$exc2
+		TRANSFER	, ESTAC
+
+ESTAC		QUEUE		estac
+		ENTER		estac, P$ocupa
+		DEPART	estac
+		ADVANCE	90, 30		; demoran en estacionar
+		ADVANCE	60, 30		; demoran en hacer bajar a los excursionistas
+		SPLIT		P$exc, REUNION	; los excursionistas bajan todos juntos
+		ADVANCE	20, 10		; demoran en salir del estacionamiento
+		LEAVE		estac, P$ocupa
+		ADVANCE	300, 60		; se demoran en llegar a una estación de servicio
+		QUEUE		nafta
+		SEIZE		nafta
+		DEPART	nafta
+		ADVANCE	180, 60		; demoran en atender a 1 bus
+		RELEASE	nafta
+		ADVANCE	600, 120
+SUBE		ASSEMBLE	V$excbus		; mato a todos y los transformo en el bondi
+		ADVANCE	900, 300
+		TERMINATE	1			; mato al bondi
+
+REUNION	ASSIGN	tipo, FN$tipo
+		ADVANCE	300, 120
+		GATHER	P$exc			; dice una vez reunido todo el grupo
+		QUEUE		museo
+		ENTER		museo
+		DEPART	museo
+		ADVANCE 	FN$tMuseo, 1200	; tiempo que permanece en el museo según el tipo
+*		LEAVE		museo		NOSEEEEEEEEEEEEEEE SE VA Y SALE A UN BAR O EL BAR ESTA DENTRO DEL MUSEO?
+		TRANSFER	FN$bar, NO_BAR, BAR
+BAR		QUEUE		bar
+		ENTER		bar
+		DEPART	bar
+		ADVANCE 	FN$tBar, 300	; tiempo que permanece en el bar según el tipo
+		TRANSFER	.3, , AZAR
+		SELECT NU	caja,1,X1,,,OCUP ; el 70% elije la caja 
+		TRANSFER	, CAJA
+OCUP		SELECT MIN	caja,1,X1,,Q	; en caso de estar todas ocupadas la que tiene cola minima
+		TRANSFER	, CAJA
+AZAR		ASSIGN	caja, V$cAzar
+CAJA		QUEUE		P$caja
+		SEIZE		P$caja
+		DEPART	P$caja
+		ADVANCE	60, 30		; demora adjudicada al pago
+		RELEASE	P$caja
+		LEAVE		bar
+		TRANSFER	, BAR_OUT
+
+NO_BAR	ADVANCE	1800, 900		; los que no van al bar, pasean
+BAR_OUT	ADVANCE	180, 120		; tardan en reunirse todos en grupete
+		GATHER	P$exc			; reuno al grupo
+		LEAVE		museo
+		ADVANCE	90, 30
+		TRANSFER	, SUBE
+
+
+
+<\F>
+Nombre=
+Descripcion=
+Version=
+Autor=
+Empresa=
+Opciones=
