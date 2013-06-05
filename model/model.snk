@@ -1,112 +1,103 @@
 [Subsistema nuevo]
-*Definición de funciones
-tipo		FUNCTION	RN2, D4
-	0.2, 1 / 0.5, 2 / 0.9, 3 / 1, 4
-bar		FUNCTION	P$tipo, D4
-	1, 500 / 2, 100 / 3, 750 / 4, 450
-tMuseo	FUNCTION	P$tipo, D4
-	1, 3600 / 2, 5400 / 3, 1800 / 4, 2400
-tBar		FUNCTION	P$tipo, D4
-	1, 900 / 2, 600 / 3, 1500 / 4, 1200
-*emulo la cantidad equiprobable entre 6 a 10
-exc1		VARIABLE	6+RN3@5
-*emulo la cantidad equiprobable entre 20 a 40
-exc2		VARIABLE	20+RN4@21
-*estacionamiento para 5 buses pequeños
-estac		STORAGE	5
-* cajashabilitadas
-INITIAL	X1, 2
-* caja elegida al azar
-cAzar		VARIABLE	1+RN5@X1
-* storage para el espacio alojado del bar
-bar		STORAGE		100000
 
-* Tiempo en cola de la estacion de servicio
-estserv		QTABLE		estserv,0,60,20
-* Tiempo en cola en el estacionamiento
-estac		QTABLE		estac,0,60,20
-* Tiempo total del bus que estuvo en el sistema
-tsist		TABLE		M1,3600,600,20
-* El tiempo que los excursionistas estuvieron en el museo
-tmuseo		TABLE		MP1,600,600,20
-* Cantidad de personas que ingresaron en un bar
-cantbar		TABLE		S$bar,0,5,20
+tipoexc FUNCTION    RN2, D4             ; Tipo de excursionista
+0.2, 1 / 0.5, 2 / 0.9, 3 / 1, 4
+bar     FUNCTION    P$tipoexc, D4       ; Probabilidad de ir al bar en función del tipo de excursionista
+1, 500 / 2, 100 / 3, 750 / 4, 450
+tmuseo  FUNCTION    P$tipoexc, D4       ; Tiempo de permanencia en el museo en función del tipo de excursionista
+1, 3600 / 2, 5400 / 3, 1800 / 4, 2400
+tbar    FUNCTION    P$tipoexc, D4       ; Tiempo de permanencia en el bar en función del tipo de excursionista
+1, 900 / 2, 600 / 3, 1500 / 4, 1200
 
-* armo subsistema de cajas habilitadas
-		GENERATE	,,7200,1
-		SAVEVALUE	X1, 3
-		ADVANCE		3600
-		SAVEVALUE	X1, 5
-		TERMINATE
+exc1    VARIABLE    6+RN3@5             ; Cantidad de excursionistas que viajan en bus pequeño
+exc2    VARIABLE    20+RN4@21           ; Cantidad de excursionistas que viajan en bus grande
+cazar   VARIABLE    1+RN5@X1            ; Caja elegida al azar
 
-*Subsistema para contar la cantidad de gente en el bar
-		GENERATE	120,0,3600
-		TABULATE	cantbar
-		TERMINATE
+estac   STORAGE     5                   ; Cantidad de buses pequeños que entran por vez en el estacionamiento
+bar     STORAGE     3000                ; Cantidad de personas que entran simultáneamente en el bar (Número grande a propósito, ya que no hay restricción en el enunciado)
 
-*Llegan pequeños buses de excursión
-		GENERATE	900, 600, , 25
-		ASSIGN		ocupa, 1	; un bus pequeño ocupa 1 lugar
-		ASSIGN		exc, V$exc1
-		TRANSFER	, ESTAC
-*Llegan buses de excursión
-		GENERATE	600, 300, 7200, 35
-		ASSIGN		ocupa, 2	; un bus grande ocupa 2 lugares
-		ASSIGN		exc, V$exc2
-		TRANSFER	, ESTAC
-ESTAC		QUEUE		estac
-		ENTER		estac, P$ocupa
-		DEPART		estac
-		ADVANCE		90, 30		; demoran en estacionar
-		ADVANCE		60, 30		; demoran en hacer bajar a los excursionistas
-		SPLIT		P$exc, REUNION	; los excursionistas bajan todos juntos
-		ADVANCE		20, 10		; demoran en salir del estacionamiento
-		LEAVE		estac, P$ocupa
-		ADVANCE		300, 60		; se demoran en llegar a una estación de servicio
-		QUEUE		estserv
-		SEIZE		estserv
-		DEPART		estserv
-		ADVANCE		180, 60		; demoran en atender a 1 bus
-		RELEASE		estserv
-		ADVANCE		600, 120
-SUBE		ASSEMBLE	2		; mato a todos y los transformo en el bondi
-		ADVANCE		900, 300
-		TABULATE	tsist
-		TERMINATE	1		; mato al bondi
-REUNION		ASSIGN		tipo, FN$tipo
-		ADVANCE		300, 120
-		MARK		1
-		GATHER		P$exc		; dice una vez reunido todo el grupo
-		QUEUE		PUERTA
-		SEIZE		PUERTA		; PARA INGRESO DE CADA PERSONA
-		DEPART		PUERTA
-		ADVANCE		4, 2
-		RELEASE		PUERTA
-		ADVANCE 	FN$tMuseo, 1200	; tiempo que permanece en el museo según el tipo
-		TABULATE	tmuseo
-		TRANSFER	FN$bar, NO_BAR, BAR
-BAR		QUEUE		bar
-		ENTER		bar
-		DEPART		bar
-		ADVANCE 	FN$tBar, 300	; tiempo que permanece en el bar según el tipo
-		TRANSFER	.3, , AZAR
-		SELECT NU	caja,1,X1,,,OCUP ; el 70% elije la caja 
-		TRANSFER	, CAJA
-OCUP		SELECT MIN	caja,1,X1,,Q	; en caso de estar todas ocupadas la que tiene cola minima
-		TRANSFER	, CAJA
-AZAR		ASSIGN		caja, V$cAzar
-CAJA		QUEUE		P$caja
-		SEIZE		P$caja
-		DEPART		P$caja
-		ADVANCE		60, 30		; demora adjudicada al pago
-		RELEASE		P$caja
-		LEAVE		bar
-		ADVANCE		180, 120
-		TRANSFER	, BAR_OUT
-NO_BAR		ADVANCE		1800, 900	; los que no van al bar, pasean
-BAR_OUT		ASSEMBLE	P$exc		; reuno al grupo
-		ADVANCE		90, 30
-		TRANSFER	, SUBE
+        INITIAL X1, 2                   ; Cantidad de cajas habilitadas
+
+estserv QTABLE      estserv,0,60,20     ; Tiempo en cola para ingresar a la estación de servicio
+estac   QTABLE      estac,0,60,20       ; Tiempo en cola para ingresar al estacionamiento
+tsist   TABLE       M1,3600,600,20      ; Tiempo total de los buses en el sistema
+tmuseo  TABLE       MP1,600,600,20      ; Tiempo que los excursionistas estuvieron en el museo
+cantbar TABLE       S$bar,0,5,20        ; Cantidad de personas en el bar
+
+* Subsistema de cajas habilitadas
+        GENERATE    ,,7200,1            ; A las 10 de la mañana se habilita una nueva caja
+        SAVEVALUE   1, 3                ; Ahora tengo 3 cajas
+        ADVANCE     3600                ; A las 11 de la mañana se habilitan 2 cajas más
+        SAVEVALUE   1, 5                ; Ahora tengo 5 cajas
+        TERMINATE
+
+* Subsistema para contar la cantidad de gente en el bar
+        GENERATE    120,0,3600          ; Cada 2 minutos a partir de las 9 de la mañana cuento gente en el bar
+        TABULATE    cantbar
+        TERMINATE
+
+* Llegan buses de excursión pequeños
+        GENERATE    900, 600, , 25
+        ASSIGN      ocupa, 1            ; Un bus pequeño ocupa 1 lugar en el estacionamiento
+        ASSIGN      exc, V$exc1         ; Asigno la cantidad de excursionistas que transporta
+        TRANSFER    , ESTAC
+* Llegan buses de excursión grandes
+        GENERATE    600, 300, 7200, 35
+        ASSIGN      ocupa, 2            ; Un bus pequeño ocupa 1 lugar en el estacionamiento
+        ASSIGN      exc, V$exc2         ; Asigno la cantidad de excursionistas que transporta
+ESTAC   QUEUE       estac
+        ENTER       estac, P$ocupa      ; Ocupo lugares en el estacionamiento según el tipo de bus
+        DEPART      estac
+        ADVANCE     90, 30              ; Tiempo en estacionar
+        ADVANCE     60, 30              ; Tiempo en hacer bajar a los excursionistas (Simulo todos de una vez)
+        SPLIT       P$exc, MUSEO        ; Mando a los excursionistas al punto de reunión a la entrada del museo
+        ADVANCE     20, 10              ; Tiempo en salir del estacionamiento
+        LEAVE       estac, P$ocupa
+        ADVANCE     300, 60             ; Tiempo en llegar a la estación de servicio
+        QUEUE       estserv
+        SEIZE       estserv             ; Entran de a uno por vez
+        DEPART      estserv
+        ADVANCE     180, 60             ; Tiempo en atender a 1 bus
+        RELEASE     estserv
+        ADVANCE     600, 120            ; Tiempo en llegar al lugar de encuentro a buscar los pasajeros
+SUBE    ASSEMBLE    2                   ; Aquí se junta el grupo de excursionistas (simulado como una sola transacción) y el bus
+        ADVANCE     900, 300            ; Tiempo en llegar al centro de exposiciones
+        TABULATE    tsist               ; Tabulo el M1 del bus
+        TERMINATE   1                   ; Finalizo la simulación de 1 bus
+        
+MUSEO   ASSIGN      tipoexc, FN$tipoexc ; Guardo en tipoexc el tipo de excursionista
+        ADVANCE     300, 120            ; Tiempo en llegar a la entrada del museo
+        MARK        1                   ; En el MP1 inicializo un contador de tiempo
+        GATHER      P$exc               ; Espero a reunir a todo el grupo para entrar al museo
+        QUEUE       PUERTA
+        SEIZE       PUERTA              ; Ingresan de a uno por vez al museo
+        DEPART      PUERTA
+        ADVANCE     4, 2                ; Tiempo en ingresar al museo
+        RELEASE     PUERTA
+        ADVANCE     FN$tmuseo, 1200     ; Tiempo de permanencia en el museo según el tipo de excursionista
+        TABULATE    tmuseo              ; Tabulo el tiempo que permaneció en el museo desde que llegó a la entrada
+        TRANSFER    FN$bar, , BAR       ; Mando un porcentaje de gente al bar
+        ADVANCE     1800, 900           ; Los que no van al bar pasean
+        TRANSFER    , BAR_OUT           ; Mando el grupo a reunirse con los que salieron del bar
+        
+BAR     ENTER       bar
+        ADVANCE     FN$tbar, 300        ; Tiempo de permanencia en el bar según el tipo de excursionista
+        TRANSFER    .3, , AZAR          ; Un 30% elige una caja al azar
+        SELECT NU   caja,1,X1,,,OCUP    ; El 70% elije una caja que esté desocupada
+        TRANSFER    , CAJA
+OCUP    SELECT MIN  caja,1,X1,,Q        ; En caso de estar todas ocupadas elige la que tiene cola mínima
+        TRANSFER    , CAJA
+AZAR    ASSIGN      caja, V$cazar       ; Asigno una caja al azar entre las habilitadas
+CAJA    QUEUE       P$caja
+        SEIZE       P$caja
+        DEPART      P$caja
+        ADVANCE     60, 30              ; Tiempo en pagar
+        RELEASE     P$caja
+        LEAVE       bar
+        ADVANCE     180, 120            ; Tiempo en llegar al punto de reunión con el resto del grupo
+BAR_OUT ASSEMBLE    P$exc               ; Reúno a los que fueron al bar y a los que se quedaron afuera paseando
+        ADVANCE     90, 30              ; Tiempo que demora el grupo en llegar al lugar donde está el bus
+        TRANSFER    , SUBE
 
 
 <\F>

@@ -1,634 +1,251 @@
 {\rtf1\ansi\deff0{\fonttbl{\f0\fswiss\fcharset0 Courier New;}}
-{\colortbl ;\red128\green0\blue0;\red0\green0\blue128;\red0\green0\blue0;}
-\viewkind4\uc1\pard\qc\cf1\lang1033\ul\b\f0\fs40 REPORTE SNAKE
+{\colortbl ;\red128\green0\blue0;\red0\green0\blue128;\red0\green0\blue0;\red128\green0\blue128;}
+\viewkind4\uc1\pard\qc\cf1\lang11274\ul\b\f0\fs40 REPORTE SNAKE
 \par \cf2\ulnone\fs30 
 \par Informaci\'f3n general
 \par 
 \par \pard\b0\fs20       START_TIME         END_TIME     BLOCKS    FACILITIES    STORAGES
-\par \cf3                0             8879         62             1           2 
+\par \cf3                0            35761         66             7           2 
 \par \pard\qc\cf2\b\fs30 
 \par Bloques no ejecutables
-\par \pard\cf3\b0\fs20  TIPO\tab\tab FUNCTION\tab RN2, D4
+\par \pard\cf3\b0\fs20  TIPOEXC FUNCTION    RN2, D4             ; TIPO DE EXCURSIONISTA
 \par 0.2, 1 / 0.5, 2 / 0.9, 3 / 1, 4
-\par BAR\tab\tab FUNCTION\tab P$TIPO, D4
-\par 1, 0.5 / 2, 0.1 / 3, 0.75 / 4, 0.45
-\par TMUSEO\tab FUNCTION\tab P$TIPO, D4
+\par BAR     FUNCTION    P$TIPOEXC, D4       ; PROBABILIDAD DE IR AL BAR EN FUNCI\'d3N DEL TIPO DE EXCURSIONISTA
+\par 1, 500 / 2, 100 / 3, 750 / 4, 450
+\par TMUSEO  FUNCTION    P$TIPOEXC, D4       ; TIEMPO DE PERMANENCIA EN EL MUSEO EN FUNCI\'d3N DEL TIPO DE EXCURSIONISTA
 \par 1, 3600 / 2, 5400 / 3, 1800 / 4, 2400
-\par TBAR\tab\tab FUNCTION\tab P$TIPO, D4
+\par TBAR    FUNCTION    P$TIPOEXC, D4       ; TIEMPO DE PERMANENCIA EN EL BAR EN FUNCI\'d3N DEL TIPO DE EXCURSIONISTA
 \par 1, 900 / 2, 600 / 3, 1500 / 4, 1200
-\par EXC1\tab\tab VARIABLE\tab 6+RN3@5
-\par EXC2\tab\tab VARIABLE\tab 20+RN4@21
-\par ESTAC\tab\tab STORAGE\tab 5
-\par MUSEO\tab\tab STORAGE\tab 10000000
-\par INITIAL\tab X1, 2
-\par CAZAR\tab\tab VARIABLE\tab 1+RN5@(X1+1)
-\par EXCBUS\tab VARIABLE\tab P$EXC+1
+\par EXC1    VARIABLE    6+RN3@5             ; CANTIDAD DE EXCURSIONISTAS QUE VIAJAN EN BUS PEQUE\'d1O
+\par EXC2    VARIABLE    20+RN4@21           ; CANTIDAD DE EXCURSIONISTAS QUE VIAJAN EN BUS GRANDE
+\par CAZAR   VARIABLE    1+RN5@X1            ; CAJA ELEGIDA AL AZAR
+\par ESTAC   STORAGE     5                   ; CANTIDAD DE BUSES PEQUE\'d1OS QUE ENTRAN POR VEZ EN EL ESTACIONAMIENTO
+\par BAR     STORAGE     3000                ; CANTIDAD DE PERSONAS QUE ENTRAN SIMULTANEAMENTE EN EL BAR (N\'daMERO GRANDE A PROP\'d3SITO, YA QUE NO HAY RESTRICCI\'d3N EN EL ENUNCIADO)
+\par         INITIAL X1, 2                   ; CANTIDAD DE CAJAS HABILITADAS
+\par ESTSERV QTABLE      ESTSERV,0,60,20     ; TIEMPO EN COLA PARA INGRESAR A LA ESTACI\'d3N DE SERVICIO
+\par ESTAC   QTABLE      ESTAC,0,60,20       ; TIEMPO EN COLA PARA INGRESAR AL ESTACIONAMIENTO
+\par TSIST   TABLE       M1,3600,600,20      ; TIEMPO TOTAL DE LOS BUSES EN EL SITEMA
+\par TMUSEO  TABLE       MP1,600,600,20      ; TIEMPO QUE LOS EXCURSIONISTAS ESTUVIERON EN EL MUSEO
+\par CANTBAR TABLE       S$BAR,0,5,20        ; CANTIDAD DE PERSONAS EN EL BAR
 \par 
 \par \pard\qc\cf2\b\fs30 
 \par Bloques ejecutables
 \par 
 \par \pard\b0\fs20   LINE         LOC  BLOCK_TYPE                               ENTRY_COUNT  CURRENT_COUNT  RETRY
-\par \cf3     37           1  GENERATE        ,,,7200                         7200              0      0
-\par     38           2  SAVEVALUE       X1,3                            7200              0      0
-\par     39           3  ADVANCE         3600                            7200              0      0
-\par     40           4  SAVEVALUE       X1,5                            7200              0      0
-\par     41           5  TERMINATE                                       7200              0      0
-\par     44           6  GENERATE        900,600,,25                       10              0      0
-\par     45           7  ASSIGN          OCUPA,1                           10              0      0
-\par     46           8  ASSIGN          EXC,V$EXC1                        10              0      0
-\par     47           9  TRANSFER        ,ESTAC                            10              0      0
-\par     50          10  GENERATE        600,300,7200,35                    5              0      0
-\par     51          11  ASSIGN          OCUPA,2                            5              0      0
-\par     52          12  ASSIGN          EXC,V$EXC2                         5              0      0
-\par     53          13  TRANSFER        ,ESTAC                             5              0      0
-\par     55       ESTAC  QUEUE           ESTAC                             15              0      0
-\par     56          15  ENTER           ESTAC,P$OCUPA                     15              0      0
-\par     57          16  DEPART          ESTAC                             15              0      0
-\par     58          17  ADVANCE         90,30                             15              0      0
-\par     59          18  ADVANCE         60,30                             15              0      0
-\par     60          19  SPLIT           P$EXC,REUNION                     15              0      0
-\par     61          20  ADVANCE         20,10                             15              0      0
-\par     62          21  LEAVE           ESTAC,P$OCUPA                     15              0      0
-\par     63          22  ADVANCE         300,60                            15              1      0
-\par     64          23  QUEUE           NAFTA                             14              0      0
-\par     65          24  SEIZE           NAFTA                             14              0      0
-\par     66          25  DEPART          NAFTA                             14              0      0
-\par     67          26  ADVANCE         180,60                            14              1      0
-\par     68          27  RELEASE         NAFTA                             13              0      0
-\par     69          28  ADVANCE         600,120                           13              3      0
-\par     70        SUBE  ASSEMBLE        V$EXCBUS                          17              9      0
-\par     71          30  ADVANCE         900,300                            1              0      0
-\par     72          31  TERMINATE       1                                  1              0      0
-\par     74     REUNION  ASSIGN          TIPO,FN$TIPO                     212              0      0
-\par     75          33  ADVANCE         300,120                          212             39      0
-\par     76          34  GATHER          P$EXC                            173             18      0
-\par     77          35  QUEUE           MUSEO                            155              0      0
-\par     78          36  ENTER           MUSEO                            155              0      0
-\par     79          37  DEPART          MUSEO                            155              0      0
-\par     80          38  ADVANCE         FN$TMUSEO,1200                   155            107      0
-\par     81          39  TRANSFER        FN$BAR,NO_BAR,BAR                 48              0      0
-\par     82         BAR  QUEUE           BAR                                0              0      0
-\par     83          41  ENTER           BAR                                0              0      0
-\par     84          42  DEPART          BAR                                0              0      0
-\par     85          43  ADVANCE         FN$TBAR,300                        0              0      0
-\par     86          44  TRANSFER        .3,,AZAR                           0              0      0
-\par     87          45  SELECT      NU  CAJA,1,X1,,,OCUP                   0              0      0
-\par     88          46  TRANSFER        ,CAJA                              0              0      0
-\par     89        OCUP  SELECT      MIN CAJA,1,X1,,Q                       0              0      0
-\par     90          48  TRANSFER        ,CAJA                              0              0      0
-\par     91        AZAR  ASSIGN          CAJA,V$CAZAR                       0              0      0
-\par     92        CAJA  QUEUE           P$CAJA                             0              0      0
-\par     93          51  SEIZE           P$CAJA                             0              0      0
-\par     94          52  DEPART          P$CAJA                             0              0      0
-\par     95          53  ADVANCE         60,30                              0              0      0
-\par     96          54  RELEASE         P$CAJA                             0              0      0
-\par     97          55  LEAVE           BAR                                0              0      0
-\par     98          56  TRANSFER        ,BAR_OUT                           0              0      0
-\par    100      NO_BAR  ADVANCE         1800,900                          48             17      0
-\par    101     BAR_OUT  ADVANCE         180,120                           31              3      0
-\par    102          59  GATHER          P$EXC                             28             21      0
-\par    103          60  LEAVE           MUSEO                              7              0      0
-\par    104          61  ADVANCE         90,30                              7              0      0
-\par    105          62  TRANSFER        ,SUBE                              7              0      0
+\par \cf3     26           1  GENERATE        ,,7200,1                           1              0      0
+\par     27           2  SAVEVALUE       1,3                                1              0      0
+\par     28           3  ADVANCE         3600                               1              0      0
+\par     29           4  SAVEVALUE       1,5                                1              0      0
+\par     30           5  TERMINATE                                          1              0      0
+\par     33           6  GENERATE        120,0,3600                       269              0      0
+\par     34           7  TABULATE        CANTBAR                          269              0      0
+\par     35           8  TERMINATE                                        269              0      0
+\par     38           9  GENERATE        900,600,,25                       25              0      0
+\par     39          10  ASSIGN          OCUPA,1                           25              0      0
+\par     40          11  ASSIGN          EXC,V$EXC1                        25              0      0
+\par     41          12  TRANSFER        ,ESTAC                            25              0      0
+\par     43          13  GENERATE        600,300,7200,35                   35              0      0
+\par     44          14  ASSIGN          OCUPA,2                           35              0      0
+\par     45          15  ASSIGN          EXC,V$EXC2                        35              0      0
+\par     46       ESTAC  QUEUE           ESTAC                             60              0      0
+\par     47          17  ENTER           ESTAC,P$OCUPA                     60              0      0
+\par     48          18  DEPART          ESTAC                             60              0      0
+\par     49          19  ADVANCE         90,30                             60              0      0
+\par     50          20  ADVANCE         60,30                             60              0      0
+\par     51          21  SPLIT           P$EXC,MUSEO                       60              0      0
+\par     52          22  ADVANCE         20,10                             60              0      0
+\par     53          23  LEAVE           ESTAC,P$OCUPA                     60              0      0
+\par     54          24  ADVANCE         300,60                            60              0      0
+\par     55          25  QUEUE           ESTSERV                           60              0      0
+\par     56          26  SEIZE           ESTSERV                           60              0      0
+\par     57          27  DEPART          ESTSERV                           60              0      0
+\par     58          28  ADVANCE         180,60                            60              0      0
+\par     59          29  RELEASE         ESTSERV                           60              0      0
+\par     60          30  ADVANCE         600,120                           60              0      0
+\par     61        SUBE  ASSEMBLE        2                                120              0      0
+\par     62          32  ADVANCE         900,300                           60              0      0
+\par     63          33  TABULATE        TSIST                             60              0      0
+\par     64          34  TERMINATE       1                                 60              0      0
+\par     66       MUSEO  ASSIGN          TIPOEXC,FN$TIPOEXC              1284              0      0
+\par     67          36  ADVANCE         300,120                         1284              0      0
+\par     68          37  MARK            1                               1284              0      0
+\par     69          38  GATHER          P$EXC                           1284              0      0
+\par     70          39  QUEUE           PUERTA                          1284              0      0
+\par     71          40  SEIZE           PUERTA                          1284              0      0
+\par     72          41  DEPART          PUERTA                          1284              0      0
+\par     73          42  ADVANCE         4,2                             1284              0      0
+\par     74          43  RELEASE         PUERTA                          1284              0      0
+\par     75          44  ADVANCE         FN$TMUSEO,1200                  1284              0      0
+\par     76          45  TABULATE        TMUSEO                          1284              0      0
+\par     77          46  TRANSFER        FN$BAR,,BAR                     1284              0      0
+\par     78          47  ADVANCE         1800,900                         672              0      0
+\par     79          48  TRANSFER        ,BAR_OUT                         672              0      0
+\par     81         BAR  ENTER           BAR                              612              0      0
+\par     82          50  ADVANCE         FN$TBAR,300                      612              0      0
+\par     83          51  TRANSFER        .3,,AZAR                         612              0      0
+\par     84          52  SELECT      NU  CAJA,1,X1,,,OCUP                 434              0      0
+\par     85          53  TRANSFER        ,CAJA                            422              0      0
+\par     86        OCUP  SELECT      MIN CAJA,1,X1,,Q                      12              0      0
+\par     87          55  TRANSFER        ,CAJA                             12              0      0
+\par     88        AZAR  ASSIGN          CAJA,V$CAZAR                     178              0      0
+\par     89        CAJA  QUEUE           P$CAJA                           612              0      0
+\par     90          58  SEIZE           P$CAJA                           612              0      0
+\par     91          59  DEPART          P$CAJA                           612              0      0
+\par     92          60  ADVANCE         60,30                            612              0      0
+\par     93          61  RELEASE         P$CAJA                           612              0      0
+\par     94          62  LEAVE           BAR                              612              0      0
+\par     95          63  ADVANCE         180,120                          612              0      0
+\par     96     BAR_OUT  ASSEMBLE        P$EXC                           1284              0      0
+\par     97          65  ADVANCE         90,30                             60              0      0
+\par     98          66  TRANSFER        ,SUBE                             60              0      0
 \par \pard\qc\cf2\b\fs30 
 \par Facilities
 \par 
 \par \pard\b0\fs20  FACILITY          ENTRIES    UTIL.  AVE_TIME  AVAILABLE   OWNER   PEND   INTER   RETRY   DELAY
-\par \cf3           NAFTA         14    0.263   166.500          1     100      0       0       0       0
+\par \cf3               1        222    0.376    60.640          1       0      0       0       0       0
+\par               2        158    0.267    60.399          1       0      0       0       0       0
+\par               3        115    0.206    64.200          1       0      0       0       0       0
+\par               4         75    0.127    60.640          1       0      0       0       0       0
+\par               5         42    0.066    56.143          1       0      0       0       0       0
+\par         ESTSERV         60    0.310   184.650          1       0      0       0       0       0
+\par          PUERTA       1284    0.146     4.073          1       0      0       0       0       0
 \par \pard\qc\cf2\b\fs30 
 \par Queues
 \par 
 \par \pard\b0\fs20  QUEUE             MAX      CONT.  ENTRIES ENTRIES(0)  AVE.CONT.   AVE.TIME    AVE.(-0)   RETRY
-\par \cf3           ESTAC      1         0        15       15       0.000       0.000       0.000       0
-\par           MUSEO      1         0       155      155       0.000       0.000       0.000       0
-\par           NAFTA      1         0        14       13       0.016      10.429     146.000       0
+\par \cf3               1      2         0       222      200       0.020       3.243      32.727       0
+\par               2      1         0       158      142       0.011       2.500      24.688       0
+\par               3      2         0       115       97       0.024       7.522      48.056       0
+\par               4      1         0        75       65       0.008       3.653      27.400       0
+\par               5      2         0        42       36       0.006       5.333      37.333       0
+\par           ESTAC      1         0        60       60       0.000       0.000       0.000       0
+\par         ESTSERV      1         0        60       50       0.023      13.417      80.500       0
+\par          PUERTA     46         0      1284       57       2.052      57.164      59.819       0
 \par \pard\qc\cf2\b\fs30 
 \par Storages
 \par 
 \par \pard\b0\fs20  STORAGE           CAP.   REMAIN.   MIN.   MAX.  ENTRIES  AVL.   AVE.C.    UTIL.  RETRY   DELAY
-\par \cf3           ESTAC       5        5       0      3       20     1    0.398    0.080      0       0
-\par           MUSEO10000000  9999852       0    148      155     1   39.993    0.000      0       0
+\par \cf3             BAR    3000     3000       0     55      612     1   23.035    0.008      0       0
+\par           ESTAC       5        5       0      3       95     1    0.454    0.091      0       0
+\par \pard\qc\cf2\b\fs30 
+\par Tables
+\par 
+\par \pard\cf4\b0\fs20 CANTBAR             TABLE            S$BAR,0,5,20
+\par 
+\par \cf3                MEDIA                         :         25.539
+\par                DESVIACION ESTANDAR           :         17.935
+\par                CANTIDAD EN RETRY             :              0
+\par 
+\par \cf2           INTERVALO       FRECUENCIA           %     %ACUMULADO    %REMANENTE
+\par \cf3          0  -         0           21       7.807          7.807        92.193
+\par          1  -         5           43      15.985         23.792        76.208
+\par          6  -        10           25       9.294         33.086        66.914
+\par         11  -        15            7       2.602         35.688        64.312
+\par         16  -        20           16       5.948         41.636        58.364
+\par         21  -        25           12       4.461         46.097        53.903
+\par         26  -        30           11       4.089         50.186        49.814
+\par         31  -        35           34      12.639         62.825        37.175
+\par         36  -        40           17       6.320         69.145        30.855
+\par         41  -        45           44      16.357         85.502        14.498
+\par         46  -        50           27      10.037         95.539         4.461
+\par         51  -        55           12       4.461        100.000         0.000
+\par             Las frecuencias restantes (8) son todas cero.
+\par 
+\par         CANTIDAD DE VALORES TABULADOS :           269
+\par         VALOR MAXIMO TABULADO         :        54.000
+\par 
+\par \cf4 TMUSEO              TABLE            MP1,600,600,20
+\par 
+\par \cf3                MEDIA                         :       3429.673
+\par                DESVIACION ESTANDAR           :       1654.306
+\par                CANTIDAD EN RETRY             :              0
+\par 
+\par \cf2           INTERVALO       FRECUENCIA           %     %ACUMULADO    %REMANENTE
+\par \cf3          0  -       600            0       0.000          0.000       100.000
+\par        601  -      1200           95       7.399          7.399        92.601
+\par       1201  -      1800          158      12.305         19.704        80.296
+\par       1801  -      2400          152      11.838         31.542        68.458
+\par       2401  -      3000          214      16.667         48.209        51.791
+\par       3001  -      3600          141      10.981         59.190        40.810
+\par       3601  -      4200           62       4.829         64.019        35.981
+\par       4201  -      4800          138      10.748         74.766        25.234
+\par       4801  -      5400          123       9.579         84.346        15.654
+\par       5401  -      6000          101       7.866         92.212         7.788
+\par       6001  -      6600           76       5.919         98.131         1.869
+\par       6601  -      7200           24       1.869        100.000         0.000
+\par             Las frecuencias restantes (8) son todas cero.
+\par 
+\par         CANTIDAD DE VALORES TABULADOS :          1284
+\par         VALOR MAXIMO TABULADO         :      6818.000
+\par 
+\par \cf4 TSIST               TABLE            M1,3600,600,20
+\par 
+\par \cf3                MEDIA                         :       9517.517
+\par                DESVIACION ESTANDAR           :        864.010
+\par                CANTIDAD EN RETRY             :              0
+\par 
+\par \cf2           INTERVALO       FRECUENCIA           %     %ACUMULADO    %REMANENTE
+\par \cf3          0  -      3600            0       0.000          0.000       100.000
+\par       3601  -      4200            0       0.000          0.000       100.000
+\par       4201  -      4800            0       0.000          0.000       100.000
+\par       4801  -      5400            0       0.000          0.000       100.000
+\par       5401  -      6000            0       0.000          0.000       100.000
+\par       6001  -      6600            1       1.667          1.667        98.333
+\par       6601  -      7200            1       1.667          3.333        96.667
+\par       7201  -      7800            1       1.667          5.000        95.000
+\par       7801  -      8400            3       5.000         10.000        90.000
+\par       8401  -      9000            8      13.333         23.333        76.667
+\par       9001  -      9600           11      18.333         41.667        58.333
+\par       9601  -     10200           23      38.333         80.000        20.000
+\par      10201  -     10800           12      20.000        100.000         0.000
+\par             Las frecuencias restantes (7) son todas cero.
+\par 
+\par         CANTIDAD DE VALORES TABULADOS :            60
+\par         VALOR MAXIMO TABULADO         :     10664.000
+\par 
+\par \pard\qc\cf2\b\fs30 
+\par QTables
+\par 
+\par \pard\cf4\b0\fs20 ESTAC               TABLE            ESTAC,0,60,20
+\par 
+\par \cf3                MEDIA                         :          0.000
+\par                DESVIACION ESTANDAR           :          0.000
+\par                CANTIDAD EN RETRY             :              0
+\par 
+\par \cf2           INTERVALO       FRECUENCIA           %     %ACUMULADO    %REMANENTE
+\par \cf3          0  -         0           60     100.000        100.000         0.000
+\par             Las frecuencias restantes (19) son todas cero.
+\par 
+\par         CANTIDAD DE VALORES TABULADOS :            60
+\par         VALOR MAXIMO TABULADO         :         0.000
+\par 
+\par \cf4 ESTSERV             TABLE            ESTSERV,0,60,20
+\par 
+\par \cf3                MEDIA                         :         13.417
+\par                DESVIACION ESTANDAR           :         33.056
+\par                CANTIDAD EN RETRY             :              0
+\par 
+\par \cf2           INTERVALO       FRECUENCIA           %     %ACUMULADO    %REMANENTE
+\par \cf3          0  -         0           50      83.333         83.333        16.667
+\par          1  -        60            3       5.000         88.333        11.667
+\par         61  -       120            6      10.000         98.333         1.667
+\par        121  -       180            1       1.667        100.000         0.000
+\par             Las frecuencias restantes (16) son todas cero.
+\par 
+\par         CANTIDAD DE VALORES TABULADOS :            60
+\par         VALOR MAXIMO TABULADO         :       136.000
+\par 
 \par \pard\qc\cf2\b\fs30 
 \par Savevalues
 \par 
 \par \pard\b0\fs20  SAVEVALUE               VALUE      RETRY
-\par \cf3          1                   2          0
-\par          2                   5          0
+\par \cf3          1                   5          0
 \par 
 \par \pard\qc\cf2\b\fs30 
 \par Cadena de eventos futuros (FEC)
 \par 
 \par \pard\b0\fs20  FEC_XACT_NUMBER    PRI         BDT       CURRENT       NEXT        PARAMETER        VALUE
-\par \cf3              141      0        8886            33         34            OCUPA            2
-\par                                                                           EXC           28
-\par                                                                          TIPO            2
-\par              153      0        8892            33         34            OCUPA            2
-\par                                                                           EXC           28
-\par                                                                          TIPO            3
-\par               24      0        8892            58         59            OCUPA            1
-\par                                                                           EXC            9
-\par                                                                          TIPO            3
-\par              146      0        8895            33         34            OCUPA            2
-\par                                                                           EXC           28
-\par                                                                          TIPO            3
-\par              158      0        8895            33         34            OCUPA            2
-\par                                                                           EXC           28
-\par                                                                          TIPO            1
-\par               28      0        8899            58         59            OCUPA            1
-\par                                                                           EXC            9
-\par                                                                          TIPO            4
-\par                9      0        8903            38         39            OCUPA            1
-\par                                                                           EXC            7
-\par                                                                          TIPO            2
-\par              155      0        8904            33         34            OCUPA            2
-\par                                                                           EXC           28
-\par                                                                          TIPO            3
-\par              145      0        8905            33         34            OCUPA            2
-\par                                                                           EXC           28
-\par                                                                          TIPO            2
-\par              157      0        8917            33         34            OCUPA            2
-\par                                                                           EXC           28
-\par                                                                          TIPO            2
-\par              144      0        8929            33         34            OCUPA            2
-\par                                                                           EXC           28
-\par                                                                          TIPO            2
-\par              165      0        8933            33         34            OCUPA            2
-\par                                                                           EXC           28
-\par                                                                          TIPO            3
-\par              148      0        8934            33         34            OCUPA            2
-\par                                                                           EXC           28
-\par                                                                          TIPO            1
-\par               78      0        8947            38         39            OCUPA            2
-\par                                                                           EXC           27
-\par                                                                          TIPO            3
-\par               46      0        8948            28         29            OCUPA            2
-\par                                                                           EXC           27
-\par             7220      0        8951            58         59            OCUPA            1
-\par                                                                           EXC            9
-\par                                                                          TIPO            2
-\par               10      0        8995            38         39            OCUPA            1
-\par                                                                           EXC            7
-\par                                                                          TIPO            1
-\par             7231      0        9002            38         39            OCUPA            1
-\par                                                                           EXC            7
-\par                                                                          TIPO            2
-\par               64      0        9004            38         39            OCUPA            2
-\par                                                                           EXC           25
-\par                                                                          TIPO            3
-\par              173      0        9006            33         34            OCUPA            2
-\par                                                                           EXC           29
-\par                                                                          TIPO            2
-\par              181      0        9012            33         34            OCUPA            2
-\par                                                                           EXC           29
-\par                                                                          TIPO            2
-\par              167      0        9014             0         10
-\par              180      0        9016            33         34            OCUPA            2
-\par                                                                           EXC           29
-\par                                                                          TIPO            2
-\par              176      0        9023            33         34            OCUPA            2
-\par                                                                           EXC           29
-\par                                                                          TIPO            1
-\par              194      0        9026            33         34            OCUPA            2
-\par                                                                           EXC           29
-\par                                                                          TIPO            2
-\par              100      0        9040            26         27            OCUPA            2
-\par                                                                           EXC           28
-\par               53      0        9052            38         39            OCUPA            2
-\par                                                                           EXC           25
-\par                                                                          TIPO            3
-\par              177      0        9054            33         34            OCUPA            2
-\par                                                                           EXC           29
-\par                                                                          TIPO            1
-\par              179      0        9058            33         34            OCUPA            2
-\par                                                                           EXC           29
-\par                                                                          TIPO            3
-\par              174      0        9062            33         34            OCUPA            2
-\par                                                                           EXC           29
-\par                                                                          TIPO            1
-\par              182      0        9069            33         34            OCUPA            2
-\par                                                                           EXC           29
-\par                                                                          TIPO            1
-\par              171      0        9080            33         34            OCUPA            2
-\par                                                                           EXC           29
-\par                                                                          TIPO            2
-\par              190      0        9090            33         34            OCUPA            2
-\par                                                                           EXC           29
-\par                                                                          TIPO            3
-\par              192      0        9090            33         34            OCUPA            2
-\par                                                                           EXC           29
-\par                                                                          TIPO            3
-\par              178      0        9106            33         34            OCUPA            2
-\par                                                                           EXC           29
-\par                                                                          TIPO            3
-\par               16      0        9109            38         39            OCUPA            1
-\par                                                                           EXC            7
-\par                                                                          TIPO            2
-\par              186      0        9115            33         34            OCUPA            2
-\par                                                                           EXC           29
-\par                                                                          TIPO            3
-\par              170      0        9118            33         34            OCUPA            2
-\par                                                                           EXC           29
-\par                                                                          TIPO            2
-\par              138      0        9120            22         23            OCUPA            2
-\par                                                                           EXC           29
-\par              193      0        9122            33         34            OCUPA            2
-\par                                                                           EXC           29
-\par                                                                          TIPO            2
-\par              169      0        9131            33         34            OCUPA            2
-\par                                                                           EXC           29
-\par                                                                          TIPO            2
-\par              101      0        9136             0          6
-\par              189      0        9142            33         34            OCUPA            2
-\par                                                                           EXC           29
-\par                                                                          TIPO            4
-\par              191      0        9147            33         34            OCUPA            2
-\par                                                                           EXC           29
-\par                                                                          TIPO            1
-\par              185      0        9160            33         34            OCUPA            2
-\par                                                                           EXC           29
-\par                                                                          TIPO            4
-\par              195      0        9162            33         34            OCUPA            2
-\par                                                                           EXC           29
-\par                                                                          TIPO            1
-\par              184      0        9179            33         34            OCUPA            2
-\par                                                                           EXC           29
-\par                                                                          TIPO            2
-\par              188      0        9184            33         34            OCUPA            2
-\par                                                                           EXC           29
-\par                                                                          TIPO            3
-\par              187      0        9185            33         34            OCUPA            2
-\par                                                                           EXC           29
-\par                                                                          TIPO            2
-\par              175      0        9193            33         34            OCUPA            2
-\par                                                                           EXC           29
-\par                                                                          TIPO            4
-\par              168      0        9201            33         34            OCUPA            2
-\par                                                                           EXC           29
-\par                                                                          TIPO            3
-\par              196      0        9201            33         34            OCUPA            2
-\par                                                                           EXC           29
-\par                                                                          TIPO            3
-\par              183      0        9226            33         34            OCUPA            2
-\par                                                                           EXC           29
-\par                                                                          TIPO            4
-\par              172      0        9234            33         34            OCUPA            2
-\par                                                                           EXC           29
-\par                                                                          TIPO            1
-\par                4      0        9251            38         39            OCUPA            1
-\par                                                                           EXC            7
-\par                                                                          TIPO            2
-\par               72      0        9268            28         29            OCUPA            2
-\par                                                                           EXC           30
-\par               34      0        9269            38         39            OCUPA            1
-\par                                                                           EXC            9
-\par                                                                          TIPO            3
-\par             7213      0        9280            57         58            OCUPA            1
-\par                                                                           EXC            9
-\par                                                                          TIPO            2
-\par               39      0        9350            28         29            OCUPA            1
-\par                                                                           EXC            6
-\par             7218      0        9362            57         58            OCUPA            1
-\par                                                                           EXC            9
-\par                                                                          TIPO            1
-\par               38      0        9363            38         39            OCUPA            1
-\par                                                                           EXC            9
-\par                                                                          TIPO            4
-\par               21      0        9375            38         39            OCUPA            1
-\par                                                                           EXC            9
-\par                                                                          TIPO            1
-\par               44      0        9407            38         39            OCUPA            1
-\par                                                                           EXC            6
-\par                                                                          TIPO            3
-\par              108      0        9411            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            3
-\par             7215      0        9456            57         58            OCUPA            1
-\par                                                                           EXC            9
-\par                                                                          TIPO            2
-\par               27      0        9473            38         39            OCUPA            1
-\par                                                                           EXC            9
-\par                                                                          TIPO            1
-\par              106      0        9476            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            3
-\par               86      0        9528            38         39            OCUPA            2
-\par                                                                           EXC           27
-\par                                                                          TIPO            3
-\par               49      0        9535            38         39            OCUPA            2
-\par                                                                           EXC           25
-\par                                                                          TIPO            3
-\par              114      0        9575            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            3
-\par               90      0        9585            38         39            OCUPA            2
-\par                                                                           EXC           27
-\par                                                                          TIPO            4
-\par               94      0        9597            38         39            OCUPA            2
-\par                                                                           EXC           27
-\par                                                                          TIPO            3
-\par               15      0        9700            57         58            OCUPA            1
-\par                                                                           EXC            7
-\par                                                                          TIPO            1
-\par               20      0        9708            38         39            OCUPA            1
-\par                                                                           EXC            9
-\par                                                                          TIPO            2
-\par               96      0        9744            38         39            OCUPA            2
-\par                                                                           EXC           27
-\par                                                                          TIPO            3
-\par               84      0        9753            38         39            OCUPA            2
-\par                                                                           EXC           27
-\par                                                                          TIPO            3
-\par                8      0        9761            57         58            OCUPA            1
-\par                                                                           EXC            7
-\par                                                                          TIPO            3
-\par               42      0        9869            38         39            OCUPA            1
-\par                                                                           EXC            6
-\par                                                                          TIPO            1
-\par               43      0        9882            57         58            OCUPA            1
-\par                                                                           EXC            6
-\par                                                                          TIPO            4
-\par               93      0        9919            38         39            OCUPA            2
-\par                                                                           EXC           27
-\par                                                                          TIPO            3
-\par               91      0        9960            38         39            OCUPA            2
-\par                                                                           EXC           27
-\par                                                                          TIPO            3
-\par              102      0        9983            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            3
-\par               98      0       10015            38         39            OCUPA            2
-\par                                                                           EXC           27
-\par                                                                          TIPO            3
-\par               23      0       10047            57         58            OCUPA            1
-\par                                                                           EXC            9
-\par                                                                          TIPO            3
-\par             7226      0       10078            57         58            OCUPA            1
-\par                                                                           EXC            6
-\par                                                                          TIPO            2
-\par               57      0       10104            38         39            OCUPA            2
-\par                                                                           EXC           25
-\par                                                                          TIPO            3
-\par               41      0       10129            38         39            OCUPA            1
-\par                                                                           EXC            6
-\par                                                                          TIPO            3
-\par               25      0       10143            57         58            OCUPA            1
-\par                                                                           EXC            9
-\par                                                                          TIPO            1
-\par               65      0       10224            38         39            OCUPA            2
-\par                                                                           EXC           25
-\par                                                                          TIPO            3
-\par               81      0       10257            38         39            OCUPA            2
-\par                                                                           EXC           27
-\par                                                                          TIPO            3
-\par               92      0       10291            38         39            OCUPA            2
-\par                                                                           EXC           27
-\par                                                                          TIPO            3
-\par               70      0       10301            38         39            OCUPA            2
-\par                                                                           EXC           25
-\par                                                                          TIPO            3
-\par               61      0       10310            38         39            OCUPA            2
-\par                                                                           EXC           25
-\par                                                                          TIPO            3
-\par               48      0       10315            38         39            OCUPA            2
-\par                                                                           EXC           25
-\par                                                                          TIPO            3
-\par               35      0       10344            38         39            OCUPA            1
-\par                                                                           EXC            9
-\par                                                                          TIPO            1
-\par              126      0       10355            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            3
-\par               33      0       10377            57         58            OCUPA            1
-\par                                                                           EXC            9
-\par                                                                          TIPO            3
-\par               56      0       10387            38         39            OCUPA            2
-\par                                                                           EXC           25
-\par                                                                          TIPO            3
-\par               18      0       10410            57         58            OCUPA            1
-\par                                                                           EXC            7
-\par                                                                          TIPO            1
-\par             7227      0       10413            57         58            OCUPA            1
-\par                                                                           EXC            6
-\par                                                                          TIPO            2
-\par              133      0       10416            38         39            OCUPA            1
-\par                                                                           EXC            6
-\par                                                                          TIPO            4
-\par               13      0       10437            38         39            OCUPA            1
-\par                                                                           EXC            7
-\par                                                                          TIPO            2
-\par               79      0       10454            38         39            OCUPA            2
-\par                                                                           EXC           27
-\par                                                                          TIPO            3
-\par               67      0       10555            38         39            OCUPA            2
-\par                                                                           EXC           25
-\par                                                                          TIPO            3
-\par               32      0       10586            57         58            OCUPA            1
-\par                                                                           EXC            9
-\par                                                                          TIPO            4
-\par               62      0       10593            57         58            OCUPA            2
-\par                                                                           EXC           25
-\par                                                                          TIPO            3
-\par              109      0       10607            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            4
-\par               37      0       10647            38         39            OCUPA            1
-\par                                                                           EXC            9
-\par                                                                          TIPO            1
-\par               83      0       10653            38         39            OCUPA            2
-\par                                                                           EXC           27
-\par                                                                          TIPO            1
-\par               22      0       10668            38         39            OCUPA            1
-\par                                                                           EXC            9
-\par                                                                          TIPO            2
-\par              129      0       10693            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            4
-\par               52      0       10713            38         39            OCUPA            2
-\par                                                                           EXC           25
-\par                                                                          TIPO            1
-\par               30      0       10734            57         58            OCUPA            1
-\par                                                                           EXC            9
-\par                                                                          TIPO            3
-\par               58      0       10755            57         58            OCUPA            2
-\par                                                                           EXC           25
-\par                                                                          TIPO            3
-\par               75      0       10790            38         39            OCUPA            2
-\par                                                                           EXC           27
-\par                                                                          TIPO            1
-\par               87      0       10795            38         39            OCUPA            2
-\par                                                                           EXC           27
-\par                                                                          TIPO            3
-\par               95      0       10875            38         39            OCUPA            2
-\par                                                                           EXC           27
-\par                                                                          TIPO            3
-\par               82      0       10897            57         58            OCUPA            2
-\par                                                                           EXC           27
-\par                                                                          TIPO            3
-\par              120      0       10907            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            3
-\par               76      0       10963            38         39            OCUPA            2
-\par                                                                           EXC           27
-\par                                                                          TIPO            3
-\par               85      0       10985            38         39            OCUPA            2
-\par                                                                           EXC           27
-\par                                                                          TIPO            3
-\par               66      0       11038            38         39            OCUPA            2
-\par                                                                           EXC           25
-\par                                                                          TIPO            4
-\par              121      0       11248            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            3
-\par              112      0       11262            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            1
-\par              116      0       11284            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            4
-\par               80      0       11342            38         39            OCUPA            2
-\par                                                                           EXC           27
-\par                                                                          TIPO            4
-\par               99      0       11364            38         39            OCUPA            2
-\par                                                                           EXC           27
-\par                                                                          TIPO            1
-\par              125      0       11411            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            1
-\par               54      0       11452            38         39            OCUPA            2
-\par                                                                           EXC           25
-\par                                                                          TIPO            1
-\par              113      0       11462            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            3
-\par               17      0       11465            38         39            OCUPA            1
-\par                                                                           EXC            7
-\par                                                                          TIPO            2
-\par              107      0       11497            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            1
-\par              131      0       11517            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            4
-\par               71      0       11529            38         39            OCUPA            2
-\par                                                                           EXC           25
-\par                                                                          TIPO            1
-\par              135      0       11535            38         39            OCUPA            1
-\par                                                                           EXC            6
-\par                                                                          TIPO            4
-\par              118      0       11553            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            4
-\par              122      0       11572            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            3
-\par               31      0       11827            38         39            OCUPA            1
-\par                                                                           EXC            9
-\par                                                                          TIPO            2
-\par              119      0       11905            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            1
-\par               40      0       11948            38         39            OCUPA            1
-\par                                                                           EXC            6
-\par                                                                          TIPO            2
-\par               60      0       12220            38         39            OCUPA            2
-\par                                                                           EXC           25
-\par                                                                          TIPO            2
-\par               63      0       12244            38         39            OCUPA            2
-\par                                                                           EXC           25
-\par                                                                          TIPO            2
-\par               51      0       12246            38         39            OCUPA            2
-\par                                                                           EXC           25
-\par                                                                          TIPO            2
-\par              134      0       12312            38         39            OCUPA            1
-\par                                                                           EXC            6
-\par                                                                          TIPO            1
-\par               50      0       12323            38         39            OCUPA            2
-\par                                                                           EXC           25
-\par                                                                          TIPO            2
-\par               55      0       12376            38         39            OCUPA            2
-\par                                                                           EXC           25
-\par                                                                          TIPO            2
-\par               88      0       12406            38         39            OCUPA            2
-\par                                                                           EXC           27
-\par                                                                          TIPO            1
-\par               36      0       12485            38         39            OCUPA            1
-\par                                                                           EXC            9
-\par                                                                          TIPO            2
-\par              124      0       12645            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            1
-\par               47      0       12811            38         39            OCUPA            2
-\par                                                                           EXC           25
-\par                                                                          TIPO            2
-\par               73      0       12854            38         39            OCUPA            2
-\par                                                                           EXC           27
-\par                                                                          TIPO            2
-\par               74      0       12887            38         39            OCUPA            2
-\par                                                                           EXC           27
-\par                                                                          TIPO            2
-\par               69      0       12960            38         39            OCUPA            2
-\par                                                                           EXC           25
-\par                                                                          TIPO            2
-\par              103      0       12975            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            2
-\par              115      0       13039            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            1
-\par              127      0       13110            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            2
-\par               59      0       13154            38         39            OCUPA            2
-\par                                                                           EXC           25
-\par                                                                          TIPO            2
-\par               68      0       13293            38         39            OCUPA            2
-\par                                                                           EXC           25
-\par                                                                          TIPO            2
-\par              128      0       13339            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            1
-\par              132      0       13486            38         39            OCUPA            1
-\par                                                                           EXC            6
-\par                                                                          TIPO            2
-\par              123      0       13564            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            2
-\par              137      0       13719            38         39            OCUPA            1
-\par                                                                           EXC            6
-\par                                                                          TIPO            2
-\par              105      0       13840            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            2
-\par               45      0       13948            38         39            OCUPA            1
-\par                                                                           EXC            6
-\par                                                                          TIPO            2
-\par              136      0       13992            38         39            OCUPA            1
-\par                                                                           EXC            6
-\par                                                                          TIPO            2
-\par               97      0       14011            38         39            OCUPA            2
-\par                                                                           EXC           27
-\par                                                                          TIPO            2
-\par              104      0       14121            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            2
-\par               77      0       14134            38         39            OCUPA            2
-\par                                                                           EXC           27
-\par                                                                          TIPO            2
-\par               89      0       14218            38         39            OCUPA            2
-\par                                                                           EXC           27
-\par                                                                          TIPO            2
-\par              110      0       14250            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            2
-\par              130      0       14651            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            2
-\par              111      0       14839            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            2
-\par              117      0       14891            38         39            OCUPA            2
-\par                                                                           EXC           30
-\par                                                                          TIPO            2
+\par \cf3              382      0       35880             0          6
 \par 
 \par }
  
